@@ -1,0 +1,46 @@
+{
+  "name": "@ai-native-solutions/9-axis-human-sonar-sdk",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Sovereign SDK for 9-axis human sonar - conversation intelligence across 7 primes plus substrate and theta. Transcript parsing, per-axis scoring, coherence trajectory, probe suggestion. Extracted verbatim from the shipping tool.",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": { "types": "./src/index.d.ts", "import": "./src/index.js" },
+    "./axes": "./src/axes.js",
+    "./sonar": "./src/sonar.js",
+    "./transcript": "./src/transcript.js",
+    "./capture": "./src/capture.js"
+  },
+  "files": ["src/", "docs/", "examples/", "README.md", "LICENSE"],
+  "scripts": {
+    "example": "node examples/quick-start.mjs"
+  },
+  "keywords": [
+    "9-axis",
+    "human-sonar",
+    "conversation-intelligence",
+    "transcript",
+    "sovereign",
+    "estate",
+    "ai-native-solutions",
+    "webllm",
+    "private"
+  ],
+  "author": "AI-Native Solutions",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sjgant80-hub/9-axis-human-sonar-sdk.git"
+  },
+  "homepage": "https://sjgant80-hub.github.io/9-axis-human-sonar-sdk/",
+  "bugs": {
+    "url": "https://github.com/sjgant80-hub/9-axis-human-sonar-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

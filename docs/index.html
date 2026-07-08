@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>9-Axis Human Sonar SDK Playground</title>
+<style>
+:root{--void:#1a1a1e;--deep:#212127;--surface:#2a2a30;--text:#e8e4db;--muted:#928d80;--sage:#7a9c7e;--amber:#d4a052;--coral:#d67a5a;--line:rgba(232,228,219,0.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--void);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:1000px;margin:0 auto}
+h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:400;margin-bottom:6px}
+h1 em{color:var(--sage);font-style:italic}
+h2{font-family:'Cormorant Garamond',Georgia,serif;font-weight:400;color:var(--muted);font-size:15px;margin-bottom:20px}
+.card{background:var(--deep);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:16px}
+textarea{width:100%;min-height:220px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:13px;resize:vertical}
+button{background:var(--sage);color:var(--void);padding:10px 20px;border:none;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;cursor:pointer;margin-right:6px;margin-top:10px}
+button:hover{background:#8db091}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.axes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.axis{background:var(--surface);padding:10px 12px;border-radius:8px;border-left:3px solid var(--line);font-size:13px}
+.axis.strong{border-left-color:var(--sage)}
+.axis.thin{border-left-color:var(--amber)}
+.axis.defended{border-left-color:var(--coral)}
+.axis .sym{color:var(--sage);font-family:'JetBrains Mono',monospace;font-weight:600;margin-right:6px}
+.axis .metrics{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10.5px;margin-top:3px}
+pre{background:var(--surface);padding:14px;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11.5px;overflow-x:auto;color:var(--muted);white-space:pre-wrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.stat{background:var(--surface);padding:12px;border-radius:8px;text-align:center}
+.stat .n{font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;color:var(--sage);font-style:italic}
+.stat .l{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;margin-top:2px}
+.probe{background:var(--surface);padding:12px 14px;border-radius:8px;border-left:3px solid var(--amber);margin-top:8px;font-style:italic;font-family:'Cormorant Garamond',Georgia,serif;font-size:15px}
+.badge{background:rgba(212,160,82,0.12);color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:3px 8px;border-radius:10px;letter-spacing:0.14em;text-transform:uppercase;margin-right:6px}
+</style>
+</head>
+<body>
+<h1><em>9-Axis Human Sonar</em> SDK playground</h1>
+<h2>Paste a transcript. See the map. Zero network.</h2>
+
+<div class="card">
+  <textarea id="input">COACH: What's underneath the anger?
+CLIENT: I don't know. It just shows up. I feel it in my chest, tight.
+COACH: When does it usually arrive?
+CLIENT: Late afternoon. After the meetings. I notice tightness across my ribs.
+COACH: What are you actually doing about it?
+CLIENT: I started walking at lunch. It helps, I think. Some days.
+COACH: Is that working?
+CLIENT: A bit. Not sure honestly.
+COACH: What's the next call?
+CLIENT: I want to leave the job but I'm not sure yet.
+COACH: How much has this cost you?
+CLIENT: Years. Three years of feeling stuck. I lost the version of me that used to write.</textarea>
+  <button onclick="run()">Run sonar</button>
+  <button class="ghost" onclick="loadDemo()">Load demo</button>
+</div>
+
+<div id="out"></div>
+
+<script type="module">
+import { mapTranscript, exportMarkdown, nextProbe, AXES, axisClass } from '../src/index.js';
+
+window.run = function () {
+  const raw = document.getElementById('input').value;
+  const session = mapTranscript(raw, { title: 'Playground' });
+  const r = session.result;
+  const out = document.getElementById('out');
+  const np = nextProbe(r.axisAgg);
+  const axes = AXES.map(a => {
+    const v = r.axisAgg[a.key];
+    return `<div class="axis ${axisClass(v)}">
+      <div><span class="sym">${a.sym}</span>${a.name}</div>
+      <div class="metrics">P ${(v.presence*100).toFixed(0)} / F ${(v.fidelity*100).toFixed(0)} / C ${(v.coherence*100).toFixed(0)} / ${v.verdict}</div>
+    </div>`;
+  }).join('');
+  out.innerHTML = `
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="n">${r.turnsAnalysed}</div><div class="l">Turns</div></div>
+        <div class="stat"><div class="n">${r.touched}/9</div><div class="l">Axes touched</div></div>
+        <div class="stat"><div class="n">${(r.meanCoh*100).toFixed(0)}</div><div class="l">Mean coherence</div></div>
+        <div class="stat"><div class="n">${r.arc}</div><div class="l">Arc</div></div>
+      </div>
+      <div class="axes">${axes}</div>
+      <div style="margin-top:14px"><span class="badge">strongest</span> ${r.strongest} &nbsp; <span class="badge">edge</span> ${r.weakest}</div>
+      <div style="margin-top:16px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase">Next probe (targets weakest axis)</div>
+      <div class="probe">"${np.probe}"<div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-style:normal;color:var(--muted);margin-top:6px;letter-spacing:0.12em;text-transform:uppercase">-> ${np.sym} ${np.name}</div></div>
+    </div>
+    <div class="card">
+      <div style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:8px">Markdown export</div>
+      <pre>${exportMarkdown(session).replace(/</g,'&lt;')}</pre>
+    </div>
+  `;
+};
+
+window.loadDemo = function () {
+  document.getElementById('input').value = `COACH: What is this at its core?
+CLIENT: It is the fear I've carried since I was young. I know that now.
+COACH: Where are you with it right now?
+CLIENT: Right now I feel it in my throat. Tight. Warm behind the eyes.
+COACH: What have you tried?
+CLIENT: I started journaling. I wrote for an hour last night.
+COACH: Is it working?
+CLIENT: It shifted something. I noticed I slept better.
+COACH: What's the next call?
+CLIENT: I've decided to tell my sister on Sunday.`;
+  run();
+};
+
+run();
+</script>
+</body>
+</html>
